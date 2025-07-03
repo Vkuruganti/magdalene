@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
@@ -55,184 +55,6 @@ MOOD_CONTENT = {
 
 MOODS = list(MOOD_CONTENT.keys())
 
-HTML_TEMPLATE = '''
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Mood-Based Playlist & Inspiration</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            background: #fff;
-            font-family: 'Roboto', Arial, sans-serif;
-            margin: 0;
-            min-height: 100vh;
-        }
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 90vh;
-        }
-        .google-box {
-            background: #fff;
-            border-radius: 24px;
-            box-shadow: 0 2px 8px rgba(60,64,67,.15);
-            padding: 2.5em 2em 2em 2em;
-            max-width: 420px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .google-logo {
-            font-family: 'Product Sans', 'Roboto', Arial, sans-serif;
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #4285f4;
-            letter-spacing: 1px;
-            margin-bottom: 0.5em;
-        }
-        .google-logo span {
-            color: #ea4335;
-        }
-        .google-logo .g-yellow { color: #fbbc05; }
-        .google-logo .g-green { color: #34a853; }
-        .google-logo .g-red { color: #ea4335; }
-        .google-logo .g-blue { color: #4285f4; }
-        form {
-            width: 100%;
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1.5em;
-        }
-        select {
-            font-size: 1.1em;
-            padding: 0.7em 1.2em;
-            border-radius: 24px 0 0 24px;
-            border: 1px solid #dfe1e5;
-            background: #f8f9fa;
-            outline: none;
-            width: 70%;
-            transition: border 0.2s;
-        }
-        select:focus {
-            border: 1.5px solid #4285f4;
-        }
-        button {
-            font-size: 1.1em;
-            padding: 0.7em 1.5em;
-            border-radius: 0 24px 24px 0;
-            border: 1px solid #dfe1e5;
-            background: #f8f9fa;
-            color: #3c4043;
-            font-weight: 500;
-            cursor: pointer;
-            margin-left: -1px;
-            transition: background 0.2s, border 0.2s;
-        }
-        button:hover {
-            background: #f1f3f4;
-            border: 1.5px solid #4285f4;
-        }
-        .results {
-            margin-top: 2em;
-            width: 100%;
-            max-width: 420px;
-        }
-        .card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 1px 4px rgba(60,64,67,.13);
-            padding: 1.5em 1.2em;
-            margin-bottom: 1.5em;
-        }
-        .card h2 {
-            font-size: 1.1em;
-            color: #4285f4;
-            margin-bottom: 0.7em;
-            font-weight: 700;
-        }
-        .card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .card li {
-            margin-bottom: 1em;
-            font-size: 1em;
-        }
-        .card a {
-            color: #1a0dab;
-            text-decoration: none;
-        }
-        .card a:hover {
-            text-decoration: underline;
-        }
-        .mood-emoji {
-            font-size: 2em;
-            margin-bottom: 0.5em;
-            text-align: center;
-        }
-        @media (max-width: 600px) {
-            .google-box, .results { max-width: 98vw; padding: 1em 0.2em; }
-            .main-container { min-height: 100vh; }
-        }
-    </style>
-</head>
-<body>
-    <div class="main-container">
-        <div class="google-box">
-            <div class="google-logo">
-                <span class="g-blue">M</span><span class="g-red">a</span><span class="g-yellow">r</span><span class="g-green">s</span>
-            </div>
-            <span class="mood-emoji">
-                {% if selected_mood == 'happy' %}😊{% elif selected_mood == 'chill' %}😌{% elif selected_mood == 'focused' %}🎯{% elif selected_mood == 'energetic' %}⚡{% else %}🌈{% endif %}
-            </span>
-            <form method="post">
-                <select name="mood" id="mood">
-                    {% for mood in moods %}
-                    <option value="{{ mood }}" {% if mood == selected_mood %}selected{% endif %}>{{ mood.title() }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit">I'm Feeling...</button>
-            </form>
-        </div>
-        {% if mood_data %}
-        <div class="results">
-            <div class="card">
-                <h2>Playlist</h2>
-                <ul>
-                    {% for item in mood_data['playlist'] %}
-                    <li><a href="{{ item['url'] }}" target="_blank">{{ item['title'] }}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="card">
-                <h2>Suggestions</h2>
-                <ul>
-                    {% for suggestion in mood_data['suggestions'] %}
-                    <li>
-                        {% if suggestion['type'] == 'article' or suggestion['type'] == 'video' %}
-                            <strong>{{ suggestion['type'].title() }}:</strong> <a href="{{ suggestion['content'] }}" target="_blank">{{ suggestion['content'] }}</a>
-                        {% else %}
-                            <strong>{{ suggestion['type'].title() }}:</strong> {{ suggestion['content'] }}
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</body>
-</html>
-'''
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     selected_mood = None
@@ -240,7 +62,7 @@ def index():
     if request.method == 'POST':
         selected_mood = request.form.get('mood')
         mood_data = MOOD_CONTENT.get(selected_mood)
-    return render_template_string(HTML_TEMPLATE, moods=MOODS, selected_mood=selected_mood, mood_data=mood_data)
+    return render_template('index.html', moods=MOODS, selected_mood=selected_mood, mood_data=mood_data)
 
 if __name__ == '__main__':
     app.run(debug=True) 
