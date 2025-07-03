@@ -70,4 +70,4 @@ You should see the Mood-Based Playlist & Inspiration app running!
 ---
 
 ## License
-MIT
+Feel Free to use it 
